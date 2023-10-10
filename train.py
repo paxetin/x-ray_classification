@@ -3,21 +3,18 @@ from torch import nn
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
-from models.simple_model import CNN
 from models.vgg import VGG
 from models.resnet import *
 from utils import *
 import gc
-from loguru import logger
 
-
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 if __name__ == '__main__':
 
     path = './Data'
-    batch_size = 24
-    num_epochs = 10
+    batch_size = 28
+    num_epochs = 25
 
     transform = transforms.Compose([transforms.Resize((224, 224)), 
                                     transforms.ToTensor(), 
@@ -29,9 +26,8 @@ if __name__ == '__main__':
     train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=True)
 
-    # model = CNN(num_classes=len(train_data.classes)).to(device)
-    model = VGG('VGG19').to(device)
-    # model = ResNet34().to(device)
+    # model = VGG('VGG11').to(device)
+    model = ResNet34().to(device)
 
     loss_func = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-5)
@@ -58,7 +54,7 @@ if __name__ == '__main__':
                 loss = loss_func(outputs, labels)
                 summary.compute(batch_idx, loss, outputs, labels, 'val')
 
-        logger.info(f'∥ Epoch {form_str(epoch+1, num_epochs)} / {num_epochs} | train loss: {summary.train_loss:.4f} | train acc: {summary.train_acc:.4f} | val loss: {summary.val_loss:.4f} | val acc: {summary.val_acc:.4f} ∥')
+        print(f'∥ Epoch {form_str(epoch+1, num_epochs)} / {num_epochs} | train loss: {summary.train_loss:.4f} | train acc: {summary.train_acc:.4f} | val loss: {summary.val_loss:.4f} | val acc: {summary.val_acc:.4f} ∥')
         gc.collect()
 
     summary.visualize()
